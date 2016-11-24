@@ -1,0 +1,6 @@
+{
+    "latexCompile.openAfterCompile": true,
+    "latexCompile.openLogAfterError": true,
+    "latexCompile.compiler": "pdflatex.exe",
+    "latexCompile.mainFile": "report_conversational-task-recognition-article.tex"
+}
