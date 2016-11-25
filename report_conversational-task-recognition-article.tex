@@ -270,7 +270,7 @@ phrase.
 
 \subsection{Architecture}
 
-The initial design of the system started with conceptual components. First, using literature names,
+The initial design of the system started with conceptual components \cite{chatbots}. First, using literature names,
 the main components were the speech recognition, using watson's API, natural language understander (NLU),
 to process inputs verifing similarity between edges of current knots, dialog manager, that handle
 their transitions and commands executions, the natural language generator via template filling
@@ -319,9 +319,26 @@ with pitch decrease that is lower than the same threshold.
 
 \subsection{Pitch Detection}
 
-Using vector dot product between the
+Using vector dot product between last and current audio buffer slices we can detect if the pitch has
+an increase or a decrease. These vectors are two dimensional; the x and y components are formed by
+the frequency and the amplitude. The current vector uses the array at indexes one to its length
+minus two, the previous vector uses the indexes zero and the length minus three and the next vector 
+uses indexes two and length minus one and all of them uses the sabe buffer. If the dot product between 
+the previous and the current vector is higher than the dot product between the current and the next
+vector the pitch gets lower otherwise the pitch gets higher \cite{nonverbalvoiceinput}.
 
+\begin{figure}[H]
+    \caption[english]{Pitch detection}
+    \centering
+    \includegraphics[width=0.5\textwidth]{PitchDetection}
+\end{figure}
 
+\section{Conclusion}
+
+The system got working pretty well; the agent is correctly executing the pre defined tasks.
+Some fixes may be required to voice detection to try to ignore noise and use a better valid
+user input detection. The tasks may have an ordered way of execution to avoid confusion on
+programming functions.
 
 \medskip
 
@@ -340,8 +357,8 @@ ISBN-10: 0131873210.
  
 \bibitem{chatbots} 
 Dan	Jurafsky, 
-\textit{Stanford	University}, 
-\\\texttt{http://web.stanford.edu/class/cs124/lec/chatbot.pdf}
+\\\texttt{http://web.stanford.edu/class/cs124/lec/chatbot.pdf},
+Stanford University.
 
 \end{thebibliography}
  
