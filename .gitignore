@@ -1,3 +1,5 @@
 *.idx
 *.log
 *.aux
+*.brf
+*.vscodeLog

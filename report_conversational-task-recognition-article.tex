@@ -40,10 +40,9 @@
 	%subsubsection=TITLE % títulos de subsubseções convertidos em letras maiúsculas
 	% -- opções do pacote babel --
 	english,			% idioma adicional para hifenização
-	brazil,				% o último idioma é o principal do documento
+	english,				% o último idioma é o principal do documento
 	%twocolumn,         % usa duas colunas
 	]{abntex2}
-
 
 % ---
 % PACOTES
@@ -60,6 +59,7 @@
 \usepackage{nomencl} 			% Lista de simbolos
 \usepackage{color}				% Controle das cores
 \usepackage{graphicx}			% Inclusão de gráficos
+\usepackage{float}
 % ---
 		
 % ---
@@ -71,24 +71,26 @@
 % ---
 % Pacotes de citações
 % ---
-\usepackage[brazilian,hyperpageref]{backref}	 % Paginas com as citações na bibl
-\usepackage[alf]{abntex2cite}	% Citações padrão ABNT
+\usepackage[english,hyperpageref]{backref}	 % Paginas com as citações na bibl
+% \usepackage[alf]{abntex2cite}	% Citações padrão ABNT
 % ---
 
+% set images path
+\graphicspath{ {images/} }
 % ---
 % Configurações do pacote backref
 % Usado sem a opção hyperpageref de backref
-\renewcommand{\backrefpagesname}{Citado na(s) página(s):~}
+\renewcommand{\backrefpagesname}{Page(s):~}
 % Texto padrão antes do número das páginas
 \renewcommand{\backref}{}
 % Define os textos da citação
 \renewcommand*{\backrefalt}[4]{
 	\ifcase #1 %
-		Nenhuma citação no texto.%
+		%
 	\or
-		Citado na página #2.%
+		Page: #2.%
 	\else
-		Citado #1 vezes nas páginas #2.%
+		#1 citations on pages: #2.%
 	\fi}%
 % ---
 
@@ -214,7 +216,12 @@ template when entering on knot.
 % ----------------------------------------------------------
 % Seção de explicações
 % ----------------------------------------------------------
-\section{Tooling}
+\section{Objective}
+
+Create a conversational agent that is capable of executing pre defined tasks throughout
+voice user inputs and respond with templates texts synthesized as voice output. 
+
+\section{Tool set}
 
 \subsection{IBM\textregistered{}  Watson\textregistered{}}
 
@@ -250,207 +257,92 @@ different source codes into related meanings mixing css, html and Javascript via
 The JSX files are being integrated with Typescript environment to add type checking to whole
 compilation pre step required by React.
 
-\subsection{Methodology}
+\section{Methodology}
 
-Creating a 
-\subsubsection{}  
-%\'begin{verbatim}
-%   \documentclass[article,11pt,oneside,a4paper,twocolumn]{abntex2}
-%\end{verbatim}
+This conversational agent has different levels of construction. They will be more deeply described 
+as topics from design of the architecture to processing of the voice to be transcribed into text.
 
 
-\subsection{Recuo do ambiente \texttt{citacao}}
+\subsection{Similarity of Jaccard}
 
-Na produção de artigos (opção \texttt{article}), pode ser útil alterar o recuo
-do ambiente \texttt{citacao}. Nesse caso, utilize o comando:
+Jaccar method is used to find the similarity percentage between the user input and the edge transition
+phrase.
 
-\begin{verbatim}
-   \setlength{\ABNTEXcitacaorecuo}{1.8cm}
-\end{verbatim}
+\subsection{Architecture}
 
-Quando um documento é produzido com a opção \texttt{twocolumn}, a classe
-\textsf{abntex2} automaticamente altera o recuo padrão de 4 cm, definido pela
-ABNT NBR 10520:2002 seção 5.3, para 1.8 cm.
+The initial design of the system started with conceptual components. First, using literature names,
+the main components were the speech recognition, using watson's API, natural language understander (NLU),
+to process inputs verifing similarity between edges of current knots, dialog manager, that handle
+their transitions and commands executions, the natural language generator via template filling
+method and finally the speech synthesizer to transform final text to voice using watson's API again.   
 
-\section{Cabeçalhos e rodapés customizados}
+Some modifications were made to the initial state to simplify the development. The NLU is integrated to
+the dialog manager that is now a valued graph. They booth works together because the NLU is statically
+defined and the transitions can be made if the similarity of the input with the transition phrase
+is higher than the value of the edge. Inside the linked graph, if the similarity is higher than 90\%,
+the input phrase will be a new transition phrase from knot A to B.
 
-Diferentes estilos de cabeçalhos e rodapés podem ser criados usando os
-recursos padrões do \textsf{memoir}.
+\begin{figure}[H]
+    \caption[english]{Architecture of the system}
+    \centering
+    \includegraphics[width=\textwidth]{UsedArch}
+\end{figure}
 
-Um estilo próprio de cabeçalhos e rodapés pode ser diferente para páginas pares
-e ímpares. Observe que a diferenciação entre páginas pares e ímpares só é
-utilizada se a opção \texttt{twoside} da classe \textsf{abntex2} for utilizado.
-Caso contrário, apenas o cabeçalho padrão da página par (\emph{even}) é usado.
+\subsection{Finite-State-Machine}
 
-Veja o exemplo abaixo cria um estilo chamado \texttt{meuestilo}. O código deve
-ser inserido no preâmbulo do documento.
+A finite state machine, better described on chapter 24 of \cite{speechlanguageprocessing}, is how user can navigate between possible tasks and is modeled as a linked graph. 
+When user is in some state, knot, each one has it's own children linked via edge; each edge has two main 
+properties; transition sentence and threshold. For each child transition sentence the Jaccard similarity
+will be calculated with user input. The edge with the highest percentage that is greater than it's threshold
+is going to make the graph navigate to linked child of the current knot. If none of the comparisons had
+higher value than the threshold, the graph sends back an error message tha the navigation failed.
 
-\begin{verbatim}
-%%criar um novo estilo de cabeçalhos e rodapés
-\makepagestyle{meuestilo}
-  %%cabeçalhos
-  \makeevenhead{meuestilo} %%pagina par
-     {topo par à esquerda}
-     {centro \thepage}
-     {direita}
-  \makeoddhead{meuestilo} %%pagina ímpar ou com oneside
-     {topo ímpar/oneside à esquerda}
-     {centro\thepage}
-     {direita}
-  \makeheadrule{meuestilo}{\textwidth}{\normalrulethickness} %linha
-  %% rodapé
-  \makeevenfoot{meuestilo}
-     {rodapé par à esquerda} %%pagina par
-     {centro \thepage}
-     {direita} 
-  \makeoddfoot{meuestilo} %%pagina ímpar ou com oneside
-     {rodapé ímpar/onside à esquerda}
-     {centro \thepage}
-     {direita}
-\end{verbatim}
+\begin{figure}[H]
+    \caption[english]{Decision tree of the current graph}
+    \centering
+    \includegraphics[width=\textwidth]{DecisionTree}
+\end{figure}
 
-Para usar o estilo criado, use o comando abaixo imediatamente após um dos
-comandos de divisão do documento. Por exemplo:
+\subsection{User Input Detection}
 
-\begin{verbatim}
-   \begin{document}
-     %%usar o estilo criado na primeira página do artigo:
-     \pretextual
-     \pagestyle{meuestilo}
-     
-     \maketitle
-     ...
-     
-     %%usar o estilo criado nas páginas textuais
-     \textual
-     \pagestyle{meuestilo}
-     
-     \chapter{Novo capítulo}
-     ...
-   \end{document}  
-\end{verbatim}
-   
-Outras informações sobre cabeçalhos e rodapés estão disponíveis na seção 7.3 do
-manual do \textsf{memoir} \cite{memoir}.
+The most challenge obstacle is observed on watching the user audio input. Determining the valid interval
+of audio buffer that represents an intended one is hard. Therefore, the system simplifies this task
+creating an thirty seconds frame buffer and makes a constant scan looking for the frame slice that
+starts with a pitch increase that is higher than a euristically pre defined threshold volume and ends
+with pitch decrease that is lower than the same threshold.
 
-\section{Mais exemplos no Modelo Canônico de Trabalhos Acadêmicos}
+\begin{figure}[H]
+    \caption[english]{Detection of valid user input}
+    \centering
+    \includegraphics[width=\textwidth]{AudioBufferFrameSlice}
+\end{figure}
 
-Este modelo de artigo é limitado em número de exemplos de comandos, pois são
-apresentados exclusivamente comandos diretamente relacionados com a produção de
-artigos.
+\subsection{Pitch Detection}
 
-Para exemplos adicionais de \abnTeX\ e \LaTeX, como inclusão de figuras,
-fórmulas matemáticas, citações, e outros, consulte o documento
-\citeonline{abntex2modelo}.
-
-\section{Consulte o manual da classe \textsf{abntex2}}
-
-Consulte o manual da classe \textsf{abntex2} \cite{abntex2classe} para uma
-referência completa das macros e ambientes disponíveis.
-
-% ---
-% Finaliza a parte no bookmark do PDF, para que se inicie o bookmark na raiz
-% ---
-\bookmarksetup{startatroot}% 
-% ---
-
-% ---
-% Conclusão
-% ---
-\section*{Considerações finais}
-\addcontentsline{toc}{section}{Considerações finais}
-
-\lipsum[1]
-
-\begin{citacao}
-\lipsum[2]
-\end{citacao}
-
-\lipsum[3]
-
-% ----------------------------------------------------------
-% ELEMENTOS PÓS-TEXTUAIS
-% ----------------------------------------------------------
-\postextual
-
-% ----------------------------------------------------------
-% Referências bibliográficas
-% ----------------------------------------------------------
-\bibliography{abntex2-modelo-references}
-
-% ----------------------------------------------------------
-% Glossário
-% ----------------------------------------------------------
-%
-% Há diversas soluções prontas para glossário em LaTeX. 
-% Consulte o manual do abnTeX2 para obter sugestões.
-%
-%\glossary
-
-% ----------------------------------------------------------
-% Apêndices
-% ----------------------------------------------------------
-
-% ---
-% Inicia os apêndices
-% ---
-\begin{apendicesenv}
-
-% ----------------------------------------------------------
-\chapter{Nullam elementum urna vel imperdiet sodales elit ipsum pharetra ligula
-ac pretium ante justo a nulla curabitur tristique arcu eu metus}
-% ----------------------------------------------------------
-\lipsum[55-57]
-
-\end{apendicesenv}
-% ---
-
-% ----------------------------------------------------------
-% Anexos
-% ----------------------------------------------------------
-\cftinserthook{toc}{AAA}
-% ---
-% Inicia os anexos
-% ---
-%\anexos
-\begin{anexosenv}
-
-% ---
-\chapter{Cras non urna sed feugiat cum sociis natoque penatibus et magnis dis
-parturient montes nascetur ridiculus mus}
-% ---
-
-\lipsum[31]
-
-\end{anexosenv}
+Using vector dot product between the
 
 
-% ---
-% Título e resumo em língua estrangeira
-% ---
 
-% \twocolumn[    		% INICIO DE ARTIGO EM DUAS COLUNAS
+\medskip
 
-% titulo em inglês
-\titulo{Canonical academic article model with \abnTeX}
-\emptythanks
-\maketitle
+\begin{thebibliography}{9}
 
-% resumo em português
-\renewcommand{\resumoname}{Abstract}
-\begin{resumoumacoluna}
- \begin{otherlanguage*}{english}
-   According to ABNT NBR 6022:2003, an abstract in foreign language is a back
-   matter mandatory element.
-
-   \vspace{\onelineskip}
+\bibitem{nonverbalvoiceinput} 
+Takeo Igarashi, John F. Hughes, 
+\textit{Voice as Sound: Using Non-verbal Voice Input for Interactive Control}. 
+Computer Science Department, Brown University 115 Waterman Street, Providence, R1 029912, USA.
  
-   \noindent
-   \textbf{Key-words}: latex. abntex.
- \end{otherlanguage*}  
-\end{resumoumacoluna}
+\bibitem{speechlanguageprocessing} 
+Daniel Jurafsky, James H. Martin, 
+\textit{Speech and Language Processing, 2nd Edition}.
+ISBN-13: 978-0131873216.
+ISBN-10: 0131873210.
+ 
+\bibitem{chatbots} 
+Dan	Jurafsky, 
+\textit{Stanford	University}, 
+\\\texttt{http://web.stanford.edu/class/cs124/lec/chatbot.pdf}
 
-% ]  				% FIM DE ARTIGO EM DUAS COLUNAS
-% ---
-
+\end{thebibliography}
+ 
 \end{document}
