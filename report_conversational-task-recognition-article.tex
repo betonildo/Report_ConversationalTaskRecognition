@@ -290,12 +290,27 @@ the input phrase will be a new transition phrase from knot A to B.
 
 \subsection{Finite-State-Machine}
 
-A finite state machine, better described on chapter 24 of \cite{speechlanguageprocessing}, is how user can navigate between possible tasks and is modeled as a linked graph. 
+A finite state machine, better described on chapter 24 of \cite{speechlanguageprocessing}, 
+is how user can navigate between possible tasks and is modeled as a linked graph. 
 When user is in some state, knot, each one has it's own children linked via edge; each edge has two main 
 properties; transition sentence and threshold. For each child transition sentence the Jaccard similarity
 will be calculated with user input. The edge with the highest percentage that is greater than it's threshold
 is going to make the graph navigate to linked child of the current knot. If none of the comparisons had
 higher value than the threshold, the graph sends back an error message tha the navigation failed.
+
+\subsubsection{Linked Graph}
+
+The internal implementation of the finit-state-machine is made using a graph with adjacency lists.
+Nodes inside are called Knots, because they tie each edge as a link to their children. The transition
+is calculated inside each knot and returns a list of possible transitions sorted and filtered by
+similarity threshold. The graph takes the most similar child and apply the navigation to that
+one and in case that the returned list is empty, it outputs a error on processing requested command.
+
+\subsubsection{Knots}
+
+Inserted and linked into the graph, one by one, the knots control their edges links to each child with a 
+sentence that will be measured the similarity with user inputs. Each knot has a minimum threshold to
+navigate to it.
 
 \begin{figure}[H]
     \caption[english]{Decision tree of the current graph}
